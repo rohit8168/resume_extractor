@@ -1,0 +1,13 @@
+<!doctype html>
+<html>
+<head><title>Uploaded</title></head>
+<body>
+  <h2>Saved Resumes</h2>
+  <ul>
+    {% for id in saved_ids %}
+      <li>Saved: ID {{ id }}</li>
+    {% endfor %}
+  </ul>
+  <a href="/upload/">Upload more</a>
+</body>
+</html>
