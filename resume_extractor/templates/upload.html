@@ -122,7 +122,7 @@
         location: locInput.value.trim()
       });
 
-      const response = await fetch(`/search /?${params.toString()}`);
+      const response = await fetch(`/search/?${params.toString()}`);
       const data = await response.json();
 
       resultsContainer.innerHTML = '';
