@@ -19,5 +19,5 @@
 7)  runserver
     pytohn manage.py runser
 api end points
-http://127.0.0.1:8000/upload/
+http://127.0.0.1:8000/
 http://127.0.0.1:8000/search/?language=Python
