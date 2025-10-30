@@ -1,13 +1,61 @@
 <!doctype html>
-<html>
-<head><title>Uploaded</title></head>
-<body>
-  <h2>Saved Resumes</h2>
-  <ul>
-    {% for id in saved_ids %}
-      <li>Saved: ID {{ id }}</li>
-    {% endfor %}
-  </ul>
-  <a href="/upload/">Upload more</a>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Uploaded Resumes</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: linear-gradient(135deg, #0f172a, #1e293b, #0f172a);
+      color: white;
+      font-family: 'Poppins', sans-serif;
+    }
+    .glass {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-6 space-y-6">
+  <h2 class="text-3xl font-bold mb-4 bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+    ✅ Extracted Resume Details
+  </h2>
+
+  {% if resumes %}
+    <div class="grid md:grid-cols-2 gap-6 w-full max-w-6xl">
+      {% for r in resumes %}
+        <div class="glass p-6 rounded-2xl">
+          <h3 class="text-2xl font-semibold mb-2 text-cyan-300">{{ r.file_name }}</h3>
+          <div class="space-y-1 text-gray-200 text-sm">
+            <p><span class="font-semibold text-cyan-400">ID:</span> {{ r.id }}</p>
+            <p><span class="font-semibold text-cyan-400">Job Role:</span> {{ r.job_role }}</p>
+            <p><span class="font-semibold text-cyan-400">Qualification:</span> {{ r.qualification }}</p>
+            <p><span class="font-semibold text-cyan-400">Languages:</span> {{ r.languages }}</p>
+            <p><span class="font-semibold text-cyan-400">Phone:</span> {{ r.phone|default:"N/A" }}</p>
+            <p><span class="font-semibold text-cyan-400">Email:</span> {{ r.email|default:"N/A" }}</p>
+            <p><span class="font-semibold text-cyan-400">Address:</span> {{ r.address|default:"N/A" }}</p>
+            <p><span class="font-semibold text-cyan-400">Age / DOB:</span> {{ r.age|default:"N/A" }}</p>
+          </div>
+
+          <details class="mt-4">
+            <summary class="cursor-pointer text-blue-400 font-medium">View Extracted Text</summary>
+            <p class="text-gray-300 text-sm mt-2 whitespace-pre-line">{{ r.extracted_text }}</p>
+          </details>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-gray-400 mb-8">No resumes found. Try uploading again.</p>
+  {% endif %}
+
+  <a href="/upload/"
+     class="inline-block px-6 py-3 rounded-xl font-semibold text-lg
+            bg-gradient-to-r from-cyan-500 to-blue-600 
+            hover:from-blue-600 hover:to-cyan-500 transition-all duration-300">
+    ⬆️ Upload More
+  </a>
 </body>
 </html>

@@ -16,6 +16,7 @@ def upload_view(request):#file upload api
         if form.is_valid:
             files = request.FILES.getlist('files')
             saved = []
+            all_data = []
             for f in files:
                 raw_text = extract_all_text(f) #extractcing the text data
                 censored_text = censor_text(raw_text) # replacing the bad words with ***
@@ -38,7 +39,19 @@ def upload_view(request):#file upload api
                 )
                 # print(r,"gfdhjsksdj")
                 saved.append(r.id)
-            return render(request, 'result.html', {'saved_ids': saved})
+                all_data.append({
+                    "id": r.id,
+                    "file_name": f.name,
+                    "job_role": struct.get('job_role'),
+                    "qualification": struct.get('qualification'),
+                    "languages": struct.get('languages'),
+                    "phone": phone,
+                    "email": email,
+                    "address": struct.get('address'),
+                    "age": struct.get('dob_or_age'),
+                    "extracted_text": censored_text
+                })
+            return render(request, 'result.html', {'resumes': all_data})
         else:
             print(form.errors)
     else:
@@ -70,7 +83,7 @@ def search_api(request):
             'phone': r.phone,
             'email': r.email,
             'address': r.address,
-            'age': r.age,
+            'age': r.age,   
             'upload_date': r.upload_date.isoformat(),
         })
     return JsonResponse({'count': q.count(), 'results': results})

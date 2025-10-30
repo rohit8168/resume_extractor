@@ -1,12 +1,159 @@
 <!doctype html>
-<html>
-<head><title>Upload Resumes</title></head>
-<body>
-  <h1>Upload Resumes (PDF, DOCX, JPG, PNG)</h1>
-  <form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-     {{ form.as_p }}
-    <button type="submit">Upload & Extract</button>
-  </form>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resume Management Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: linear-gradient(135deg, #0f172a, #1e293b, #0f172a);
+      color: white;
+      font-family: 'Poppins', sans-serif;
+    }
+    .glass {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    }
+    input[type="file"]::-webkit-file-upload-button {
+      background: #06b6d4;
+      border: none;
+      color: white;
+      padding: 10px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    input[type="file"]::-webkit-file-upload-button:hover {
+      background: #0ea5e9;
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body class="flex items-center justify-center min-h-screen px-4">
+  <div class="glass p-8 rounded-2xl w-full max-w-5xl text-center">
+    <h1 class="text-3xl font-bold mb-8 bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+      ⚙️ Resume Management Portal
+    </h1>
+
+    <!-- Tabs -->
+    <div class="flex justify-center space-x-4 mb-8">
+      <button id="uploadTab" class="tab-btn bg-cyan-600 px-6 py-2 rounded-xl font-semibold hover:bg-cyan-500 transition-all">Upload</button>
+      <button id="searchTab" class="tab-btn bg-gray-700 px-6 py-2 rounded-xl font-semibold hover:bg-gray-600 transition-all">Search</button>
+    </div>
+
+    <!-- Upload Section -->
+    <div id="uploadSection">
+      <p class="text-gray-300 mb-6 text-sm">
+        Upload multiple resumes in 
+        <span class="text-cyan-400">PDF</span>, 
+        <span class="text-blue-400">DOCX</span>, 
+        <span class="text-emerald-400">JPG</span>, or 
+        <span class="text-pink-400">PNG</span> formats.
+      </p>
+
+      <form method="post" enctype="multipart/form-data" class="space-y-6">
+        {% csrf_token %}
+        <div class="text-left">
+          {{ form.files }}
+        </div>
+        <button 
+          type="submit"
+          class="w-full py-3 rounded-xl font-semibold text-lg
+                 bg-gradient-to-r from-cyan-500 to-blue-600 
+                 hover:from-blue-600 hover:to-cyan-500 transition-all duration-300">
+          Upload & Extract
+        </button>
+      </form>
+    </div>
+
+    <!-- Search Section -->
+    <div id="searchSection" class="hidden">
+      <h2 class="text-2xl font-bold mb-6 text-cyan-400">🔍 Search Resumes</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <input id="jobInput" type="text" placeholder="Job Role" class="px-4 py-3 rounded-xl bg-white/10 text-white placeholder-gray-400">
+        <input id="langInput" type="text" placeholder="Language" class="px-4 py-3 rounded-xl bg-white/10 text-white placeholder-gray-400">
+        <input id="qualInput" type="text" placeholder="Qualification" class="px-4 py-3 rounded-xl bg-white/10 text-white placeholder-gray-400">
+        <input id="locInput" type="text" placeholder="Location" class="px-4 py-3 rounded-xl bg-white/10 text-white placeholder-gray-400">
+      </div>
+      <button id="searchBtn" class="px-6 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-600 transition-all">Search</button>
+      <div id="resultsContainer" class="grid md:grid-cols-2 gap-6 mt-6"></div>
+    </div>
+  </div>
+
+  <script>
+    // Tab switching logic
+    const uploadTab = document.getElementById('uploadTab');
+    const searchTab = document.getElementById('searchTab');
+    const uploadSection = document.getElementById('uploadSection');
+    const searchSection = document.getElementById('searchSection');
+
+    uploadTab.addEventListener('click', () => {
+      uploadSection.classList.remove('hidden');
+      searchSection.classList.add('hidden');
+      uploadTab.classList.add('bg-cyan-600');
+      searchTab.classList.remove('bg-cyan-600');
+      searchTab.classList.add('bg-gray-700');
+    });
+
+    searchTab.addEventListener('click', () => {
+      searchSection.classList.remove('hidden');
+      uploadSection.classList.add('hidden');
+      searchTab.classList.add('bg-cyan-600');
+      uploadTab.classList.remove('bg-cyan-600');
+      uploadTab.classList.add('bg-gray-700');
+    });
+
+    // Search API integration
+    const jobInput = document.getElementById('jobInput');
+    const langInput = document.getElementById('langInput');
+    const qualInput = document.getElementById('qualInput');
+    const locInput = document.getElementById('locInput');
+    const searchBtn = document.getElementById('searchBtn');
+    const resultsContainer = document.getElementById('resultsContainer');
+
+    async function searchResumes() {
+      const params = new URLSearchParams({
+        job_role: jobInput.value.trim(),
+        language: langInput.value.trim(),
+        qualification: qualInput.value.trim(),
+        location: locInput.value.trim()
+      });
+
+      const response = await fetch(`/search /?${params.toString()}`);
+      const data = await response.json();
+
+      resultsContainer.innerHTML = '';
+
+      if (data.count === 0) {
+        resultsContainer.innerHTML = `<p class="text-gray-400 col-span-full">No resumes found.</p>`;
+        return;
+      }
+
+      data.results.forEach(r => {
+        const card = document.createElement('div');
+        card.className = 'glass p-6 rounded-2xl text-sm space-y-1';
+        card.innerHTML = `
+          <h3 class="text-xl font-semibold text-cyan-300">${r.file_name}</h3>
+          <p><span class="font-semibold text-cyan-400">Job Role:</span> ${r.job_role || 'N/A'}</p>
+          <p><span class="font-semibold text-cyan-400">Qualification:</span> ${r.qualification || 'N/A'}</p>
+          <p><span class="font-semibold text-cyan-400">Languages:</span> ${r.languages || 'N/A'}</p>
+          <p><span class="font-semibold text-cyan-400">Phone:</span> ${r.phone || 'N/A'}</p>
+          <p><span class="font-semibold text-cyan-400">Email:</span> ${r.email || 'N/A'}</p>
+          <p><span class="font-semibold text-cyan-400">Address:</span> ${r.address || 'N/A'}</p>
+          <p><span class="font-semibold text-cyan-400">Age:</span> ${r.age || 'N/A'}</p>
+          <p class="text-gray-400 text-xs mt-2">📅 Uploaded: ${new Date(r.upload_date).toLocaleString()}</p>
+        `;
+        resultsContainer.appendChild(card);
+      });
+    }
+
+    searchBtn.addEventListener('click', searchResumes);
+    document.addEventListener('keypress', e => {
+      if (e.key === 'Enter') searchResumes();
+    });
+  </script>
 </body>
 </html>
